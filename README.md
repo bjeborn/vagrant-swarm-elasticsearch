@@ -7,10 +7,10 @@ Configuration and scripts for deploying elasticsearch in docker swarm in vagrant
 ```
 3 Rocky Linux VMs in libvirt
 |-Docker Swarm with 1 manager and 2 worker nodes
-  |-2 ES master nodes. Locked to workers
-  |-3 ES data nodes. One on node
-  |-1 ES ingest node
-  |-1 Kibana 
+  |-2 ES master nodes. Locked to worker nodes
+  |-3 ES data nodes. One on each node
+  |-1 ES ingest node. Port 9200 exposed
+  |-1 Kibana. Port 5601 exposed
 ```
 
 Kibana: http://192.168.50.100:5601  
