@@ -1,0 +1,247 @@
+version: "3.8"
+
+x-settings:
+  CLUSTER_NAME: &cluster_name mycluster
+  HOST_FS_ROOT: &host_fs_root /tank
+  HOST_FS_ROOT_CLUSTER: &host_fs_root_cluster /tank/mycluster
+  ELASTIC_IMAGE: &elastic_image docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+  ELASTIC_PASSWORD: &elastic_password elasticelastic
+  ELASTIC_SWARM_PORT: &elastic_swarm_port 9200
+  KIBANA_IMAGE: &kibana_image docker.elastic.co/kibana/kibana:8.5.3
+  KIBANA_PASSWORD: &kibana_password kibanakibana
+  KIBANA_SWARM_PORT: &kibana_swarm_port 5601
+
+x-es: &es
+  image: *elastic_image
+  environment: &es-environment
+    cluster.name: *cluster_name
+    cluster.initial_master_nodes: es-master-01,es-master-02
+    discovery.seed_hosts: es-master-01,es-master-02
+    ELASTIC_PASSWORD: *elastic_password
+    bootstrap.memory_lock: "true"
+    xpack.security.enabled: "true"
+    xpack.security.http.ssl.enabled: "true"
+    xpack.security.http.ssl.key: es-multicert.key
+    xpack.security.http.ssl.certificate: es-multicert.crt
+    xpack.security.http.ssl.certificate_authorities: ca.crt
+    xpack.security.http.ssl.verification_mode: certificate
+    xpack.security.transport.ssl.enabled: "true"
+    xpack.security.transport.ssl.key: es-multicert.key
+    xpack.security.transport.ssl.certificate: es-multicert.crt
+    xpack.security.transport.ssl.certificate_authorities: ca.crt
+    xpack.security.transport.ssl.verification_mode: certificate
+    xpack.license.self_generated.type: basic
+    cluster.routing.allocation.awareness.attributes: rack
+    cluster.routing.allocation.awareness.force.rack.values: rack1,rack2,rack3
+  configs:
+    - source: ca.crt
+      target: /usr/share/elasticsearch/config/ca.crt
+    - source: es-multicert.crt
+      target: /usr/share/elasticsearch/config/es-multicert.crt
+    - source: es-multicert.key
+      target: /usr/share/elasticsearch/config/es-multicert.key
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+
+services:
+  es-master-01:
+    <<: *es
+    volumes:
+      - type: bind
+        source: *host_fs_root_cluster
+        target: /es
+    environment:
+      <<: *es-environment
+      node.name: es-master-01
+      node.roles: master, remote_cluster_client
+      path.data: /es/es-master-01
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == worker01
+
+  es-master-02:
+    <<: *es
+    volumes:
+      - type: bind
+        source: *host_fs_root_cluster
+        target: /es
+    environment:
+      <<: *es-environment
+      node.name: es-master-02
+      node.roles: master, remote_cluster_client
+      path.data: /es/es-master-02
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == worker02
+  
+  es-ingest:
+    <<: *es
+    ports:
+      - target: 9200
+        published: *elastic_swarm_port
+        protocol: tcp
+    environment:
+      <<: *es-environment
+      node.name: "es-ingest-{{.Node.ID}}"
+      network.host: _eth1_
+      network.bind_host: 0.0.0.0
+      node.roles: ingest, remote_cluster_client, transform, master, voting_only
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+
+  es-data-01:
+    <<: *es
+    volumes:
+      - type: bind
+        source: *host_fs_root_cluster
+        target: /es
+    environment:
+      <<: *es-environment
+      node.name: "es-data-01-{{.Node.ID}}"
+      node.roles: data, ingest, remote_cluster_client, transform, master, voting_only
+      node.attr.rack: rack1
+      path.data: /es/es-data-01
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.rack == rack1
+
+  es-data-02:
+    <<: *es
+    volumes:
+      - type: bind
+        source: *host_fs_root_cluster
+        target: /es
+    environment:
+      <<: *es-environment
+      node.name: "es-data-02-{{.Node.ID}}"
+      node.roles: data, ingest, remote_cluster_client, transform, master, voting_only
+      node.attr.rack: rack2
+      path.data: /es/es-data-02
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.rack == rack2
+
+  es-data-03:
+    <<: *es
+    volumes:
+      - type: bind
+        source: *host_fs_root_cluster
+        target: /es
+    environment:
+      <<: *es-environment
+      node.name: "es-data-03-{{.Node.ID}}"
+      node.roles: data, ingest, remote_cluster_client, transform, master, voting_only
+      node.attr.rack: rack3
+      path.data: /es/es-data-03
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+      replicas: 1
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.labels.rack == rack3
+
+  kibana:
+    image: *kibana_image
+    configs:
+      - source: ca.crt
+        target: /certs/ca.crt
+    environment:
+      SERVERNAME: kibana
+      ELASTICSEARCH_HOSTS: https://es-ingest:9200
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: *kibana_password
+      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /certs/ca.crt
+      TELEMETRY_OPTIN: "false"
+    ports:
+      - target: 5601
+        published: *kibana_swarm_port
+        protocol: tcp
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+      replicas: 1
+
+  setup-users:
+    image: rockylinux:9
+    environment:
+      ELASTIC_PASSWORD: *elastic_password      
+      KIBANA_PASSWORD: *kibana_password
+    command: >
+      bash -c '
+        until echo "########## Testing elastic login" && curl -k -f --user "elastic:$${ELASTIC_PASSWORD}" https://es-ingest:9200; do sleep 10; done;
+        echo "########## elastic login test ok"
+
+        if [ ! "`curl -k -f --user "kibana_system:$${KIBANA_PASSWORD}" https://es-ingest:9200`" ]; then
+          until echo "########## Setting kibana_system password" && curl -k -X POST --user "elastic:$${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es-ingest:9200/_security/user/kibana_system/_password -d "{\"password\":\"$${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        else
+          echo "########## kibana_system login test ok"
+        fi
+        echo "########## Going to sleep infinity"
+        sleep infinity
+      '
+    deploy:
+      replicas: 1
+
+  setup-datadir:
+    image: rockylinux:9
+    volumes:
+      - type: bind
+        source: *host_fs_root
+        target: *host_fs_root
+    environment:
+      HOST_FS_ROOT: *host_fs_root
+      HOST_FS_ROOT_CLUSTER: *host_fs_root_cluster
+    command: >
+      bash -c '
+        if [ ! -d "$${HOST_FS_ROOT_CLUSTER}" ]; then
+          echo "########## Creating dir $${HOST_FS_ROOT_CLUSTER}"
+          mkdir -m 777 "$${HOST_FS_ROOT_CLUSTER}"
+        fi
+        echo "########## Setting permissions on $${HOST_FS_ROOT_CLUSTER}"
+        chmod 777 "$${HOST_FS_ROOT_CLUSTER}"
+        echo "########## Going to sleep infinity"
+        sleep infinity
+      '
+    deploy:
+      mode: global
+
+configs:
+  ca.crt:
+    external: true
+  es-multicert.crt:
+    external: true
+  es-multicert.key:
+    external: true

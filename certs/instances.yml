@@ -1,0 +1,32 @@
+
+instances:
+  - name: es-multicert
+    dns:
+      - es-master
+      - es-master-01
+      - es-master-02
+      - es-master-03
+      - es-master-04
+      - es-master-05
+      - es-data
+      - es-data-01
+      - es-data-02
+      - es-data-03
+      - es-data-04
+      - es-data-05
+      - es-ingest
+      - es-ingest-01
+      - es-ingest-02
+      - es-ingest-03
+      - es-ingest-04
+      - es-ingest-05
+      - kibana
+      - kibana-01
+      - kibana-02
+      - kibana-03
+      - kibana-04
+      - kibana-05
+      - localhost
+      - localhost4
+    ip:
+      - 127.0.0.1
