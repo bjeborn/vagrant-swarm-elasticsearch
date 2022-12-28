@@ -26,6 +26,8 @@ until [ "`docker node ls -q 2>/dev/null | wc -l`" -eq "3" ]; do
   echo "Waiting for nodes..."
   sleep 1
 done
+sleep 5
+echo "Adding node labels"
 docker node update --label-add rack=rack1 manager
 docker node update --label-add rack=rack2 worker01
 docker node update --label-add rack=rack3 worker02
