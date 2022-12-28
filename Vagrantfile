@@ -13,6 +13,7 @@ docker run --rm hello-world
 usermod -a -G docker vagrant
 zcat /vagrant/elasticsearch-8.5.3.docker.gz | docker load
 zcat /vagrant/kibana-8.5.3.docker.gz | docker load
+zcat /vagrant/rockylinux-9.docker.gz | docker load
 mkdir -m 777 /tank
 SCRIPT
 
