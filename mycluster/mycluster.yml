@@ -177,12 +177,19 @@ services:
     configs:
       - source: ca.crt
         target: /certs/ca.crt
+      - source: es-multicert.crt
+        target: /certs/es-multicert.crt
+      - source: es-multicert.key
+        target: /certs/es-multicert.key
     environment:
       SERVERNAME: kibana
       ELASTICSEARCH_HOSTS: https://es-ingest:9200
       ELASTICSEARCH_USERNAME: kibana_system
       ELASTICSEARCH_PASSWORD: *kibana_password
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /certs/ca.crt
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_CERTIFICATE: /certs/es-multicert.crt
+      SERVER_SSL_KEY: /certs/es-multicert.key
       TELEMETRY_OPTIN: "false"
     ports:
       - target: 5601
