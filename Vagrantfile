@@ -39,7 +39,7 @@ SCRIPT
 
 $worker_script = <<SCRIPT
 echo Swarm Join...
-until [ -f /vagrant/worker_token ]; do
+until [ -s /vagrant/worker_token ]; do
   echo "Waiting for token..."
   sleep 1
   ls -la /vagrant/ > /dev/null 2>&1
