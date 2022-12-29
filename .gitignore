@@ -2,3 +2,5 @@
 /worker_token
 /certs/certs
 /.vagrant
+.venv
+venv

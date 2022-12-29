@@ -34,8 +34,16 @@ docker node update --label-add rack=rack3 worker02
 pushd /vagrant/certs
 ./generate-certs-and-docker-configs.sh
 popd
-pushd /vagrant/mycluster
-./deploy.sh
+pushd /vagrant
+python -m venv venv
+venv/bin/pip install -r requirements.txt
+venv/bin/python stack_generator.py \
+ --elastic_password elasticelastic \
+ --elastic_port=9200 \
+ --kibana_password=kibanakibana \
+ --kibana_port=5601 \
+ mycluster
+docker stack deploy -c mycluster.yml mycluster
 popd
 SCRIPT
 
