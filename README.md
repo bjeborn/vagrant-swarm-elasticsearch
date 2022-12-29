@@ -28,8 +28,8 @@ ES cluster specification is in mycluster/mycluster.yml
 
 ## Modifications
 ### Disable TLS between Kibana and browser
-* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in mycluster/mycluster.yml
-* Run deploy.sh in the directory mycluster
+* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in mycluster.yml
+* Redeploy stack with `docker stack deploy -c mycluster.yml mycluster`
 
 ## Stack generator
 ```
