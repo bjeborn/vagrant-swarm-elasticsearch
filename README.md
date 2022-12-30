@@ -22,21 +22,24 @@ Password: elasticelastic
 VM specifications are in Vagrantfile  
 Swarm is constructed in Vagrantfile  
 Swarm join token is shared to workers via Vagrant NFS share  
-ES certificates are generated from Vagrantfile by letting the manager node call certs/generate-certs-and-docker-configs.sh  
+ES certificates are generated from Vagrantfile by letting the manager node call generate-certs-and-docker-configs.sh  
 ES certificates are stored as Docker configs for availability on all nodes  
-ES cluster specification is in mycluster/mycluster.yml  
+ES cluster specification is generated from template and saved in mycluster/mycluster.yml  
 
 ## Modifications
 ### Disable TLS between Kibana and browser
-* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in stacks/mycluster.yml
-* Redeploy stack with `docker stack deploy -c stacks/mycluster.yml mycluster`
+__On manager VM__
+* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in /vagrant/stacks/mycluster.yml
+* Redeploy stack with `docker stack deploy -c /vagrant/stacks/mycluster.yml mycluster`
 
 ## Stack generator
+To generate stack configs, stack_generator.py can be used on manager VM
 ```
-python stack_generator.py \
+/venv/bin/python /vagrant/stack_generator.py \
  --elastic_password elasticelastic \
- --elastic_port=9200 \
+ --elastic_port=9210 \
  --kibana_password=kibanakibana \
- --kibana_port=5601 \
- mycluster
+ --kibana_port=5611 \
+ cluster2
 ```
+Deploy (on manager VM) with `docker stack deploy /vagrant/stacks/cluster2.yml cluster2`

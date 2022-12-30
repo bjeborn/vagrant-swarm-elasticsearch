@@ -25,6 +25,6 @@ output_from_parsed_template = template.render(
     kibana_password=args.kibana_password,
     kibana_port=args.kibana_port)
 
-os.makedirs("stacks", exist_ok=True)
-with open(os.path.join("stacks", f"{args.cluster_name}.yml"), "w") as fh:
+os.makedirs(os.path.join(os.path.dirname(__file__), "stacks"), exist_ok=True)
+with open(os.path.join(os.path.dirname(__file__), "stacks", f"{args.cluster_name}.yml"), "w") as fh:
     fh.write(output_from_parsed_template)
