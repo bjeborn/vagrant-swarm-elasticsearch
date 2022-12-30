@@ -31,7 +31,7 @@ echo "Adding node labels"
 docker node update --label-add rack=rack1 manager
 docker node update --label-add rack=rack2 worker01
 docker node update --label-add rack=rack3 worker02
-pushd /vagrant/certs
+pushd /vagrant
 ./generate-certs-and-docker-configs.sh
 popd
 pushd /vagrant
