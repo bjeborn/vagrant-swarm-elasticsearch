@@ -1,6 +1,7 @@
 /*.docker.gz
 /worker_token
-/certs/certs
+/certs
+/stacks
 /.vagrant
 .venv
 venv

@@ -43,7 +43,7 @@ venv/bin/python stack_generator.py \
  --kibana_password=kibanakibana \
  --kibana_port=5601 \
  mycluster
-docker stack deploy -c mycluster.yml mycluster
+docker stack deploy -c stacks/mycluster.yml mycluster
 popd
 SCRIPT
 
