@@ -28,12 +28,12 @@ ES cluster specification is in mycluster/mycluster.yml
 
 ## Modifications
 ### Disable TLS between Kibana and browser
-* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in mycluster.yml
-* Redeploy stack with `docker stack deploy -c mycluster.yml mycluster`
+* Set `SERVER_SSL_ENABLED: "false"` on the kibana service in stacks/mycluster.yml
+* Redeploy stack with `docker stack deploy -c stacks/mycluster.yml mycluster`
 
 ## Stack generator
 ```
-python ./stack_generator.py \
+python stack_generator.py \
  --elastic_password elasticelastic \
  --elastic_port=9200 \
  --kibana_password=kibanakibana \
