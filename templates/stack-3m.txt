@@ -1,0 +1,15 @@
+Description of template stack-3m.yml.jinja
+3 x master
+3 x data
+1 x ingest
+1 x kibana
+      ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+VMs   │ manager vm  ├─┤ worker01 vm ├─┤ worker02 vm │
+      └─────────────┘ └─────────────┘ └─────────────┘
+
+      ┌──────────────┬───────────────┬──────────────┐
+Swarm │ es-master-03 │  es-master-01 │ es-master-02 │
+      │ es-data-01   │  es-data-02   │ es-data-03   │
+      ├──────────────┴───────────────┴──────────────┤
+      │           kibana         es-ingest          │
+      └─────────────────────────────────────────────┘
