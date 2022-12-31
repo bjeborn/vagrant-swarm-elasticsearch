@@ -40,6 +40,7 @@ python -m venv /venv
  --elastic_port=9200 \
  --kibana_password=kibanakibana \
  --kibana_port=5601 \
+ --template=stack-2m \
  mycluster
 docker stack deploy -c /vagrant/stacks/mycluster.yml mycluster
 SCRIPT

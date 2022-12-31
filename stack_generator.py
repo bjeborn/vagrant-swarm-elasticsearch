@@ -11,12 +11,13 @@ parser.add_argument('--elastic_password', required=True)
 parser.add_argument('--elastic_port', required=True, type=int)
 parser.add_argument('--kibana_password', required=True)
 parser.add_argument('--kibana_port', required=True, type=int)
+parser.add_argument('--template', default="stack")
 
 args = parser.parse_args()
 
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 env = Environment(loader=FileSystemLoader(template_dir))
-template = env.get_template("stack.yml.jinja")
+template = env.get_template(args.template + ".yml.jinja")
 
 output_from_parsed_template = template.render(
     cluster_name=args.cluster_name,
